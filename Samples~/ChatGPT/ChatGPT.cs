@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using UnityEngine.Networking;
 
 namespace OpenAI
 {
@@ -14,14 +15,26 @@ namespace OpenAI
         [SerializeField] private RectTransform received;
 
         private float height;
-        private OpenAIApi openai = new OpenAIApi();
+        private OpenAIApi openai = new OpenAIApi("123", "http://ailadgx-gpu40.utsarr.net:2530/v1");
 
         private List<ChatMessage> messages = new List<ChatMessage>();
         private string prompt = "Act as a random stranger in a chat room and reply to the questions. Don't break character. Don't ever mention that you are an AI model.";
 
         private void Start()
         {
+            Debug.Log("Testing connection...");
+            TestConnection();
             button.onClick.AddListener(SendReply);
+        }
+
+        private async void TestConnection()
+        {
+            using (var request = UnityWebRequest.Get("http://ailadgx-gpu40.utsarr.net:2530/v1/models"))
+            {
+                var operation = request.SendWebRequest();
+                while (!operation.isDone) await System.Threading.Tasks.Task.Yield();
+                Debug.Log($"Status: {request.responseCode}, Error: {request.error}, Result: {request.downloadHandler.text}");
+            }
         }
 
         private void AppendMessage(ChatMessage message)
@@ -58,7 +71,7 @@ namespace OpenAI
             // Complete the instruction
             var completionResponse = await openai.CreateChatCompletion(new CreateChatCompletionRequest()
             {
-                Model = "gpt-4o-mini",
+                Model = "Qwen/Qwen3-VL-8B-Instruct-FP8",
                 Messages = messages
             });
 

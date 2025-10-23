@@ -37,12 +37,26 @@ namespace OpenAI
 
         /// OpenAI API base path for requests.
         private const string BASE_PATH = "https://api.openai.com/v1";
-
-        public OpenAIApi(string apiKey = null, string organization = null)
+        private string basePath = BASE_PATH;
+        
+                
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+        private static void AcceptAllCertificates()
         {
+            System.Net.ServicePointManager.ServerCertificateValidationCallback = 
+                delegate { return true; };
+        }
+        
+        public OpenAIApi(string apiKey = null, string baseUrl = null, string organization = null)
+        {
+            AcceptAllCertificates();
             if (apiKey != null)
             {
                 configuration = new Configuration(apiKey, organization);
+            }
+            if (baseUrl != null)
+            {
+                basePath = baseUrl;
             }
         }
         
@@ -202,7 +216,7 @@ namespace OpenAI
         /// </summary>
         public async Task<ListModelsResponse> ListModels()
         {
-            var path = $"{BASE_PATH}/models";
+            var path = $"{basePath}/models";
             return await DispatchRequest<ListModelsResponse>(path, UnityWebRequest.kHttpVerbGET);
         }
         
@@ -213,7 +227,7 @@ namespace OpenAI
         /// <returns>See <see cref="Model"/></returns>
         public async Task<OpenAIModel> RetrieveModel(string id)
         {
-            var path = $"{BASE_PATH}/models/{id}";
+            var path = $"{basePath}/models/{id}";
             return await DispatchRequest<OpenAIModelResponse>(path, UnityWebRequest.kHttpVerbGET);
         }
 
@@ -224,7 +238,7 @@ namespace OpenAI
         /// <returns>See <see cref="CreateChatCompletionResponse"/></returns>
         public async Task<CreateChatCompletionResponse> CreateChatCompletion(CreateChatCompletionRequest request)
         {
-            var path = $"{BASE_PATH}/chat/completions";
+            var path = $"{basePath}/chat/completions";
             var payload = CreatePayload(request);
             
             return await DispatchRequest<CreateChatCompletionResponse>(path, UnityWebRequest.kHttpVerbPOST, payload);
@@ -240,7 +254,7 @@ namespace OpenAI
         public void CreateChatCompletionAsync(CreateChatCompletionRequest request, Action<List<CreateChatCompletionResponse>> onResponse, Action onComplete, CancellationTokenSource token)
         {
             request.Stream = true;
-            var path = $"{BASE_PATH}/chat/completions";
+            var path = $"{basePath}/chat/completions";
             var payload = CreatePayload(request);
             
             DispatchRequest(path, UnityWebRequest.kHttpVerbPOST, onResponse, onComplete, token, payload);
@@ -253,7 +267,7 @@ namespace OpenAI
         /// <returns>See <see cref="CreateImageResponse"/></returns>
         public async Task<CreateImageResponse> CreateImage(CreateImageRequest request)
         {
-            var path = $"{BASE_PATH}/images/generations";
+            var path = $"{basePath}/images/generations";
             var payload = CreatePayload(request);
             return await DispatchRequest<CreateImageResponse>(path, UnityWebRequest.kHttpVerbPOST, payload);
         }
@@ -265,7 +279,7 @@ namespace OpenAI
         /// <returns>See <see cref="CreateImageResponse"/></returns>
         public async Task<CreateImageResponse> CreateImageEdit(CreateImageEditRequest request)
         {
-            var path = $"{BASE_PATH}/images/edits";
+            var path = $"{basePath}/images/edits";
 
             var form = new List<IMultipartFormSection>();
             form.AddFile(request.Image, "image", "image/png");
@@ -285,7 +299,7 @@ namespace OpenAI
         /// <returns>See <see cref="CreateImageResponse"/></returns>
         public async Task<CreateImageResponse> CreateImageVariation(CreateImageVariationRequest request)
         {
-            var path = $"{BASE_PATH}/images/variations";
+            var path = $"{basePath}/images/variations";
             
             var form = new List<IMultipartFormSection>();
             form.AddFile(request.Image, "image", "image/png");
@@ -304,7 +318,7 @@ namespace OpenAI
         /// <returns>See <see cref="CreateEmbeddingsResponse"/></returns>
         public async Task<CreateEmbeddingsResponse> CreateEmbeddings(CreateEmbeddingsRequest request)
         {
-            var path = $"{BASE_PATH}/embeddings";
+            var path = $"{basePath}/embeddings";
             var payload = CreatePayload(request);
             return await DispatchRequest<CreateEmbeddingsResponse>(path, UnityWebRequest.kHttpVerbPOST, payload);
         }
@@ -316,7 +330,7 @@ namespace OpenAI
         /// <returns>See <see cref="CreateAudioResponse"/></returns>
         public async Task<CreateAudioResponse> CreateAudioTranscription(CreateAudioTranscriptionsRequest request)
         {
-            var path = $"{BASE_PATH}/audio/transcriptions";
+            var path = $"{basePath}/audio/transcriptions";
             
             var form = new List<IMultipartFormSection>();
             if (string.IsNullOrEmpty(request.File))
@@ -343,7 +357,7 @@ namespace OpenAI
         /// <returns>See <see cref="CreateAudioResponse"/></returns>
         public async Task<CreateAudioResponse> CreateAudioTranslation(CreateAudioTranslationRequest request)
         {
-            var path = $"{BASE_PATH}/audio/translations";
+            var path = $"{basePath}/audio/translations";
             
             var form = new List<IMultipartFormSection>();
             if (string.IsNullOrEmpty(request.File))
@@ -368,7 +382,7 @@ namespace OpenAI
         /// <returns>See <see cref="ListFilesResponse"/></returns>
         public async Task<ListFilesResponse> ListFiles()
         {
-            var path = $"{BASE_PATH}/files";
+            var path = $"{basePath}/files";
             return await DispatchRequest<ListFilesResponse>(path, UnityWebRequest.kHttpVerbGET);
         }
         
@@ -381,7 +395,7 @@ namespace OpenAI
         /// <returns>See <see cref="OpenAIFile"/></returns>
         public async Task<OpenAIFile> CreateFile(CreateFileRequest request)
         {
-            var path = $"{BASE_PATH}/files";
+            var path = $"{basePath}/files";
             
             var form = new List<IMultipartFormSection>();
             form.AddFile(request.File, "file", "application/json");
@@ -397,7 +411,7 @@ namespace OpenAI
         /// <returns>See <see cref="DeleteResponse"/></returns>
         public async Task<DeleteResponse> DeleteFile(string id)
         {
-            var path = $"{BASE_PATH}/files/{id}";
+            var path = $"{basePath}/files/{id}";
             return await DispatchRequest<DeleteResponse>(path, UnityWebRequest.kHttpVerbDELETE);
         }
         
@@ -408,7 +422,7 @@ namespace OpenAI
         /// <returns>See <see cref="OpenAIFile"/></returns>
         public async Task<OpenAIFile> RetrieveFile(string id)
         {
-            var path = $"{BASE_PATH}/files/{id}";
+            var path = $"{basePath}/files/{id}";
             return await DispatchRequest<OpenAIFileResponse>(path, UnityWebRequest.kHttpVerbGET);
         }
         
@@ -419,7 +433,7 @@ namespace OpenAI
         /// <returns>See <see cref="OpenAIFile"/></returns>
         public async Task<OpenAIFile> DownloadFile(string id)
         {
-            var path = $"{BASE_PATH}/files/{id}/content";
+            var path = $"{basePath}/files/{id}/content";
             return await DispatchRequest<OpenAIFileResponse>(path, UnityWebRequest.kHttpVerbGET);
         }
         
@@ -431,7 +445,7 @@ namespace OpenAI
         /// <returns>See <see cref="FineTune"/></returns>
         public async Task<FineTune> CreateFineTune(CreateFineTuneRequest request)
         {
-            var path = $"{BASE_PATH}/fine-tunes";
+            var path = $"{basePath}/fine-tunes";
             var payload = CreatePayload(request);
             return await DispatchRequest<FineTuneResponse>(path, UnityWebRequest.kHttpVerbPOST, payload);
         }
@@ -442,7 +456,7 @@ namespace OpenAI
         /// <returns>See <see cref="ListFineTunesResponse"/></returns>
         public async Task<ListFineTunesResponse> ListFineTunes()
         {
-            var path = $"{BASE_PATH}/fine-tunes";
+            var path = $"{basePath}/fine-tunes";
             return await DispatchRequest<ListFineTunesResponse>(path, UnityWebRequest.kHttpVerbGET);
         }
         
@@ -453,7 +467,7 @@ namespace OpenAI
         /// <returns>See <see cref="FineTune"/></returns>
         public async Task<FineTune> RetrieveFineTune(string id)
         {
-            var path = $"{BASE_PATH}/fine-tunes/{id}";
+            var path = $"{basePath}/fine-tunes/{id}";
             return await DispatchRequest<FineTuneResponse>(path, UnityWebRequest.kHttpVerbGET);
         }
         
@@ -464,7 +478,7 @@ namespace OpenAI
         /// <returns>See <see cref="FineTune"/></returns>
         public async Task<FineTune> CancelFineTune(string id)
         {
-            var path = $"{BASE_PATH}/fine-tunes/{id}/cancel";
+            var path = $"{basePath}/fine-tunes/{id}/cancel";
             return await DispatchRequest<FineTuneResponse>(path, UnityWebRequest.kHttpVerbPOST);
         }
         
@@ -479,7 +493,7 @@ namespace OpenAI
         /// <returns>See <see cref="ListFineTuneEventsResponse"/></returns>
         public async Task<ListFineTuneEventsResponse> ListFineTuneEvents(string id, bool stream = false)
         {
-            var path = $"{BASE_PATH}/fine-tunes/{id}/events?stream={stream}";
+            var path = $"{basePath}/fine-tunes/{id}/events?stream={stream}";
             return await DispatchRequest<ListFineTuneEventsResponse>(path, UnityWebRequest.kHttpVerbGET);
         }
         
@@ -490,7 +504,7 @@ namespace OpenAI
         /// <returns>See <see cref="DeleteResponse"/></returns>
         public async Task<DeleteResponse> DeleteFineTunedModel(string model)
         {
-            var path = $"{BASE_PATH}/models/{model}";
+            var path = $"{basePath}/models/{model}";
             return await DispatchRequest<DeleteResponse>(path, UnityWebRequest.kHttpVerbDELETE);
         }
 
@@ -501,7 +515,7 @@ namespace OpenAI
         /// <returns>See <see cref="CreateModerationResponse"/></returns>
         public async Task<CreateModerationResponse> CreateModeration(CreateModerationRequest request)
         {
-            var path = $"{BASE_PATH}/moderations";
+            var path = $"{basePath}/moderations";
             var payload = CreatePayload(request);
             return await DispatchRequest<CreateModerationResponse>(path, UnityWebRequest.kHttpVerbPOST, payload);
         }

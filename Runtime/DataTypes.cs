@@ -86,7 +86,7 @@ namespace OpenAI
     public sealed class CreateChatCompletionRequest
     {
         public string Model { get; set; }
-        public List<ChatMessage> Messages { get; set; }
+        public List<ImageChatMessage> Messages { get; set; }
         public float? Temperature { get; set; } = 1;
         public int N { get; set; } = 1;
         public bool Stream { get; set; } = false;
@@ -120,8 +120,8 @@ namespace OpenAI
     
     public struct ChatChoice
     {
-        public ChatMessage Message { get; set; }
-        public ChatMessage Delta { get; set; }
+        public ImageChatMessage Message { get; set; }
+        public ImageChatMessage Delta { get; set; }
         public int? Index { get; set; }
         public string FinishReason { get; set; }
         public string Logprobs { get; set; }
@@ -131,6 +131,20 @@ namespace OpenAI
     {
         public string Role { get; set; }
         public string Content { get; set; }
+    }
+    
+    public class ImageChatMessage
+    {
+        public string Role { get; set; }
+        public string Content { get; set; }
+        public string ImageBase64 { get; set; }
+    
+        public ImageChatMessage(string role, string content, string imageBase64 = null)
+        {
+            Role = role;
+            Content = content;
+            ImageBase64 = imageBase64;
+        }
     }
     
     #endregion
